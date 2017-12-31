@@ -14,26 +14,22 @@ import (
 var (
 	httpsAddr = flag.String("https", ":443", "https service address")
 	httpAddr  = flag.String("http", ":80", "http service address")
-	certFile  = flag.String("cert", "/usr/local/etc/letsencrypt/live/concurrent.space/fullchain.pem", "path to chained cert file")
-	keyFile   = flag.String("key", "/usr/local/etc/letsencrypt/live/concurrent.space/privkey.pem", "path to private key file")
+	certFile  = flag.String("cert", "/usr/local/etc/letsencrypt/live/avalanche.space/fullchain.pem", "path to chained cert file")
+	keyFile   = flag.String("key", "/usr/local/etc/letsencrypt/live/avalanche.space/privkey.pem", "path to private key file")
 )
 
 // NOTE: the supplied certificate must support all the domains listed here.
 var knownHTTPSDomains = map[string]struct{}{
-	"concurrent.space":     struct{}{},
-	"www.concurrent.space": struct{}{},
-	"x.concurrent.space":   struct{}{},
-	"avalanche.space":      struct{}{},
-	"www.avalanche.space":  struct{}{},
+	"avalanche.space":     struct{}{},
+	"www.avalanche.space": struct{}{},
+	"x.avalanche.space":   struct{}{},
 }
 
 var targets = revproxy.ByHost(
 	map[string]string{
-		"concurrent.space":     "localhost:8090",
-		"www.concurrent.space": "localhost:8090",
-		"x.concurrent.space":   "localhost:8091",
-		"avalanche.space":      "localhost:8090",
-		"www.avalanche.space":  "localhost:8090",
+		"avalanche.space":     "localhost:8090",
+		"www.avalanche.space": "localhost:8090",
+		"x.avalanche.space":   "localhost:8091",
 	},
 )
 
