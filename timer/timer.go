@@ -34,7 +34,7 @@ func main() {
 	}
 
 	<-time.After(d)
-	elapsed := fmt.Sprintf("%s elapsed", d)
+	elapsed := fmt.Sprintf("%s elapsed", dur)
 	if err := notify("timer done", elapsed); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to notify\n")
 	}
