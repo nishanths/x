@@ -16,6 +16,7 @@ func usage() {
 }
 
 func main() {
+	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
 
