@@ -28,21 +28,25 @@ func main() {
 		usage()
 	}
 
-	dur := flag.Arg(0)
-	d, err := time.ParseDuration(dur)
+	input := flag.Arg(0)
+	d, err := time.ParseDuration(input)
 	if err != nil {
-		log.Fatalf("failed to parse duration %q\nsee https://golang.org/pkg/time/#ParseDuration for accepted format", dur)
+		log.Fatalf("failed to parse duration %q\nsee https://golang.org/pkg/time/#ParseDuration for accepted format", input)
 	}
 
+	start := time.Now()
 	<-time.After(d)
-	elapsed := fmt.Sprintf("%s elapsed", dur)
-	if err := notify("timer done", elapsed); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to notify\n")
+
+	elapsed := fmt.Sprintf("%s elapsed", input)
+	started := fmt.Sprintf("started %s", start.Format("Jan 2 15:04:05")) // time.Stamp but without the obnoxious space
+	if err := notify("timer done", elapsed, started); err != nil {
+		log.Print("failed to notify")
 	}
-	fmt.Fprintf(os.Stdout, "done (%s)\n", elapsed)
+
+	fmt.Println("done")
 }
 
-func notify(title, message string) error {
-	arg := fmt.Sprintf(`display notification "%s" with title "%s"`, message, title)
+func notify(title, subtitle, message string) error {
+	arg := fmt.Sprintf(`display notification "%s" with title "%s" subtitle "%s"`, message, title, subtitle)
 	return exec.Command("osascript", "-e", arg).Run()
 }
