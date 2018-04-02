@@ -32,11 +32,14 @@ import (
 var delim = flag.String("d", "\t", "field delimiter rune")
 
 func usage() {
-	fmt.Fprint(os.Stderr, "usage: json2csv [filename.json]")
+	fmt.Fprint(os.Stderr, "usage: json2csv [flags] [file]\n\n")
+	fmt.Fprintf(os.Stderr, "flags\n%s\n", `   -d <delim>  field delimiter rune (default "\t")`)
 }
 
 func main() {
+	flag.Usage = usage
 	flag.Parse()
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetPrefix("json2csv")
 
