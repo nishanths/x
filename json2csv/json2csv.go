@@ -2,7 +2,7 @@
 //
 //   [
 //     {"key": a, "key2": b},
-//     {"key": x, "key2": y},
+//     {"key": x, "key2": y}
 //   ]
 //
 // to CSV of the format:
@@ -16,7 +16,7 @@
 // and y are formatted using "%v". The program does not validate
 // whether the input meets the expected format.
 //
-// The default delimiter is the tab character.
+// The default field delimiter in the output is the tab character.
 package main
 
 import (
@@ -32,15 +32,15 @@ import (
 )
 
 var (
-	delim  = flag.String("d", "\t", "field delimiter rune")
-	header = flag.Bool("h", true, "include CSV header in output")
+	delim  = flag.String("d", "\t", "field delimiter rune in the output")
+	header = flag.Bool("h", true, "include CSV header in the output")
 )
 
 func usage() {
 	fmt.Fprint(os.Stderr, "usage: json2csv [flags] [file]\n\n")
 	fmt.Fprintf(os.Stderr, "flags\n")
-	fmt.Fprintf(os.Stderr, "%s\n", `   -d  field delimiter rune (default "\t")`)
-	fmt.Fprintf(os.Stderr, "%s\n", `   -h  include CSV header in output (default "true")`)
+	fmt.Fprintf(os.Stderr, "%s\n", `   -d  field delimiter rune in the output (default "\t")`)
+	fmt.Fprintf(os.Stderr, "%s\n", `   -h  include CSV header in the output (default "true")`)
 	os.Exit(2)
 }
 
