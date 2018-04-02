@@ -1,11 +1,11 @@
-// Command json2csv coverts JSON of the format:
+// Command json2csv converts JSON of the format:
 //
 //   [
 //     {"key": a, "key2": b},
 //     {"key": x, "key2": y},
 //   ]
 //
-// to TSV of the format:
+// to CSV of the format:
 //
 //   key key2
 //   a b
@@ -13,8 +13,10 @@
 //
 // The input must be a JSON list of objects, with each object
 // having the same set (or subset) of keys. The values a, b, x,
-// and y are formatted using '%v'. The program does not validate
+// and y are formatted using "%v". The program does not validate
 // whether the input meets the expected format.
+//
+// The default delimiter is the tab character.
 package main
 
 import (
@@ -29,11 +31,16 @@ import (
 	"unicode/utf8"
 )
 
-var delim = flag.String("d", "\t", "field delimiter rune")
+var (
+	delim  = flag.String("d", "\t", "field delimiter rune")
+	header = flag.Bool("h", true, "include CSV header in output")
+)
 
 func usage() {
 	fmt.Fprint(os.Stderr, "usage: json2csv [flags] [file]\n\n")
-	fmt.Fprintf(os.Stderr, "flags\n%s\n", `   -d <delim>  field delimiter rune (default "\t")`)
+	fmt.Fprintf(os.Stderr, "flags\n")
+	fmt.Fprintf(os.Stderr, "%s\n", `   -d  field delimiter rune (default "\t")`)
+	fmt.Fprintf(os.Stderr, "%s\n", `   -h  include CSV header in output (default "true")`)
 }
 
 func main() {
@@ -41,7 +48,7 @@ func main() {
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetPrefix("json2csv")
+	log.SetPrefix("json2csv: ")
 
 	var in io.ReadCloser
 
@@ -71,11 +78,13 @@ func main() {
 
 	var records [][]string
 
-	var keys []string
-	for k := range l[0] {
-		keys = append(keys, k)
+	if *header {
+		var keys []string
+		for k := range l[0] {
+			keys = append(keys, k)
+		}
+		records = append(records, keys)
 	}
-	records = append(records, keys)
 
 	for _, m := range l {
 		var row []string
