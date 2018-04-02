@@ -41,6 +41,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "flags\n")
 	fmt.Fprintf(os.Stderr, "%s\n", `   -d  field delimiter rune (default "\t")`)
 	fmt.Fprintf(os.Stderr, "%s\n", `   -h  include CSV header in output (default "true")`)
+	os.Exit(2)
 }
 
 func main() {
