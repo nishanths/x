@@ -1,8 +1,5 @@
-```
-usage: timer <duration>
-```
+On macOS, to make the notification stick on screen until dismissed
+manually, go to System Preferences > Notifications > Script Editor, then
+choose "Alerts".
 
-To make the notification stick on screen until dismissed manually, choose
-`Alerts` in System Preferences > Notifications > Script Editor.
-
-<img src="https://i.imgur.com/zLSTCpa.png" width=600>
+<img src="notification.png" width="600">

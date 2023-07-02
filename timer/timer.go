@@ -10,43 +10,52 @@ import (
 	"time"
 )
 
+var (
+	notify = flag.Bool("notify", true, "show system notification when done")
+)
+
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: timer <duration>\n")
-	os.Exit(2)
+	fmt.Fprintf(os.Stderr, "usage: timer [-notify] [duration]\n")
 }
 
 func main() {
+	log.SetPrefix("timer: ")
 	log.SetFlags(0)
+
 	flag.Usage = usage
 	flag.Parse()
 
-	if runtime.GOOS != "darwin" {
-		log.Fatal("timer notification supported on darwin only")
-	}
-
-	if flag.NArg() == 0 {
+	if flag.NArg() != 1 {
 		usage()
+		os.Exit(2)
 	}
 
-	input := flag.Arg(0)
-	d, err := time.ParseDuration(input)
-	if err != nil {
-		log.Fatalf("failed to parse duration %q\nsee https://golang.org/pkg/time/#ParseDuration for accepted format", input)
+	if *notify && runtime.GOOS != "darwin" {
+		log.Fatal("system notification supported only on darwin")
 	}
+
+	d, err := time.ParseDuration(flag.Arg(0))
+	if err != nil {
+		log.Fatalf("error parsing duration: %s", err)
+	}
+
+	exitCode := 0
 
 	start := time.Now()
 	<-time.After(d)
+	log.Println("done")
 
-	elapsed := fmt.Sprintf("%s elapsed", input)
-	started := fmt.Sprintf("started %s", start.Format("Jan 2 15:04:05")) // time.Stamp but without the obnoxious space
-	if err := notify("timer done", elapsed, started); err != nil {
-		log.Print("failed to notify")
+	if *notify {
+		if err := systemNotification("timer done", d.String(), fmt.Sprintf("started %s", start.Format("Jan 2 15:04:05"))); err != nil {
+			log.Printf("error showing system notification: %s", err)
+			exitCode = 1
+		}
 	}
 
-	fmt.Println("done")
+	os.Exit(exitCode)
 }
 
-func notify(title, subtitle, message string) error {
+func systemNotification(title, subtitle, message string) error {
 	arg := fmt.Sprintf(`display notification "%s" with title "%s" subtitle "%s"`, message, title, subtitle)
 	return exec.Command("osascript", "-e", arg).Run()
 }

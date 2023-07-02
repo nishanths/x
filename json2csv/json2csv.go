@@ -1,22 +1,24 @@
-// Command json2csv converts JSON of the format:
+// Command json2csv converts JSON to CSV.
 //
-//   [
-//     {"key": a, "key2": b},
-//     {"key": x, "key2": y}
-//   ]
+// For example, the following JSON input:
 //
-// to CSV of the format:
+//	[
+//	  {"key1": a, "key2": b},
+//	  {"key1": x, "key2": y}
+//	]
 //
-//   key key2
-//   a b
-//   x y
+// is converted to the following CSV:
 //
-// The input must be a JSON list of objects, with each object
-// having the same set (or subset) of keys. The values a, b, x,
-// and y are formatted using "%v". The program does not validate
-// whether the input meets the expected format.
+//	key1	key2
+//	a	b
+//	x	y
 //
-// The default field delimiter in the output is the tab character.
+// The input must be a JSON list of objects, with each object having the
+// same set (or subset) of keys. Values such as a, b, x, and y in the
+// example are formatted using "%v". The command does not validate that
+// the input meets the expected format.
+//
+// The default field delimiter in the CSV output is "\t".
 package main
 
 import (
@@ -32,24 +34,23 @@ import (
 )
 
 var (
-	delim  = flag.String("d", "\t", "field delimiter rune in the output")
-	header = flag.Bool("h", true, "include CSV header in the output")
+	delim  = flag.String("d", "\t", "CSV field delimiter rune")
+	header = flag.Bool("h", true, "include CSV header")
 )
 
 func usage() {
-	fmt.Fprint(os.Stderr, "usage: json2csv [flags] [file]\n\n")
-	fmt.Fprintf(os.Stderr, "flags\n")
-	fmt.Fprintf(os.Stderr, "%s\n", `   -d  field delimiter rune in the output (default "\t")`)
-	fmt.Fprintf(os.Stderr, "%s\n", `   -h  include CSV header in the output (default "true")`)
-	os.Exit(2)
+	fmt.Fprintf(os.Stderr, "usage: json2csv [flags] [file]\n")
+	fmt.Fprintf(os.Stderr, "\n")
+	fmt.Fprintf(os.Stderr, "Flags:\n")
+	flag.PrintDefaults()
 }
 
 func main() {
+	log.SetFlags(0)
+	log.SetPrefix("json2csv: ")
+
 	flag.Usage = usage
 	flag.Parse()
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetPrefix("json2csv: ")
 
 	var in io.ReadCloser
 
@@ -60,17 +61,23 @@ func main() {
 		var err error
 		in, err = os.Open(flag.Arg(0))
 		if err != nil {
-			log.Fatalf("failed to open file: %s", err)
+			log.Fatalf("error opening file: %s", err)
 		}
 	default:
 		usage()
+		os.Exit(2)
 	}
 
-	defer in.Close()
+	defer in.Close() // ok to ignore error: file is read-only
+
+	delim, _ := utf8.DecodeRuneInString(*delim)
+	if delim == utf8.RuneError {
+		log.Fatalf("invalid value for -d")
+	}
 
 	var l []map[string]interface{}
 	if err := json.NewDecoder(in).Decode(&l); err != nil {
-		log.Fatalf("failed to read json: %s", err)
+		log.Fatalf("error decoding json: %s", err)
 	}
 
 	if len(l) == 0 {
@@ -95,12 +102,14 @@ func main() {
 		records = append(records, row)
 	}
 
-	r, _ := utf8.DecodeRuneInString(*delim)
 	w := csv.NewWriter(os.Stdout)
-	w.Comma = r
-	w.WriteAll(records)
+	w.Comma = delim
+
+	if err := w.WriteAll(records); err != nil {
+		log.Fatalf("error writing csv: %s", err)
+	}
 
 	if err := w.Error(); err != nil {
-		log.Printf("failed to write CSV: %s", err)
+		log.Fatalf("%s", err)
 	}
 }
